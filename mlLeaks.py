@@ -19,7 +19,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics import roc_auc_score
 import argparse
 import deeplearning as dp
-import classifier
+import dropout_classifier as classifier
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--adv',  default='1', help='Which adversary 1, 2, or 3')
@@ -33,6 +33,8 @@ parser.add_argument('--num_epoch', type=int, default=50, help='Number of epochs 
 parser.add_argument('--preprocessData', action='store_true', help='Preprocess the data, if false then load preprocessed data')
 parser.add_argument('--trainTargetModel', action='store_true', help='Train a target model, if false then load an already trained model')
 parser.add_argument('--trainShadowModel', action='store_true', help='Train a shadow model, if false then load an already trained model')
+parser.add_argument('--maskConfidences', action='store_true', help='Apply confidence score masking to training posteriors')
+
 
 opt = parser.parse_args()
 #Picking the top X probabilities 
@@ -43,7 +45,8 @@ def clipDataTopX(dataToClip, top=3):
 def readCIFAR10(data_path):
 	for i in range(5):
 		f = open(data_path + '/data_batch_' + str(i + 1), 'rb')
-		train_data_dict = pickle.load(f)
+		# train_data_dict = pickle.load(f)
+		train_data_dict = pickle.load(f, encoding='latin1')
 		f.close()
 		if i == 0:
 			X = train_data_dict["data"]
@@ -52,7 +55,8 @@ def readCIFAR10(data_path):
 		X = np.concatenate((X , train_data_dict["data"]),   axis=0)
 		y = np.concatenate((y , train_data_dict["labels"]), axis=0)
 	f = open(data_path + '/test_batch', 'rb')
-	test_data_dict = pickle.load(f)
+	# test_data_dict = pickle.load(f)
+	test_data_dict = pickle.load(f, encoding='latin1')
 	f.close()
 	XTest = np.array(test_data_dict["data"])
 	yTest = np.array(test_data_dict["labels"])
@@ -63,7 +67,8 @@ def trainTarget(modelType, X, y,
 				splitData=True,
 				test_size=0.5, 
 				inepochs=50, batch_size=300,
-				learning_rate=0.001):
+				learning_rate=0.001,
+				maskConfidences=False):
 
 	
 	if(splitData):
@@ -78,7 +83,7 @@ def trainTarget(modelType, X, y,
 			   y_test.astype(np.int32))
 
 	attack_x, attack_y, theModel = dp.train_target_model(dataset=dataset, epochs=inepochs, batch_size=batch_size,learning_rate=learning_rate,
-				   n_hidden=128,l2_ratio = 1e-07,model=modelType)
+				   n_hidden=128,l2_ratio = 1e-07,model=modelType, maskConfidences=maskConfidences)
 
 	return attack_x, attack_y, theModel
 
@@ -138,7 +143,8 @@ def preprocessingNews(toTrainData, toTestData):
 
 
 def shuffleAndSplitData(dataX, dataY,cluster):
-	c = zip(dataX, dataY)
+	# c = zip(dataX, dataY)
+	c = list(zip(dataX, dataY))
 	random.shuffle(c)
 	dataX, dataY = zip(*c)
 	toTrainData  = np.array(dataX[:cluster])
@@ -197,7 +203,7 @@ def initializeData(dataset,orginialDatasetPath,dataFolderPath = './data/'):
 
 
 
-def initializeTargetModel(dataset,num_epoch,dataFolderPath= './data/',modelFolderPath = './model/',classifierType = 'cnn'):
+def initializeTargetModel(dataset,num_epoch,dataFolderPath= './data/',modelFolderPath = './model/',classifierType = 'cnn', maskConfidences=False):
 	dataPath = dataFolderPath+dataset+'/Preprocessed'
 	attackerModelDataPath = dataFolderPath+dataset+'/attackerModelData'
 	modelPath = modelFolderPath + dataset
@@ -209,12 +215,19 @@ def initializeTargetModel(dataset,num_epoch,dataFolderPath= './data/',modelFolde
 	print("Training the Target model for {} epoch".format(num_epoch))
 	targetTrain, targetTrainLabel  = load_data(dataPath + '/targetTrain.npz')
 	targetTest,  targetTestLabel   = load_data(dataPath + '/targetTest.npz')
-	attackModelDataTarget, attackModelLabelsTarget, targetModelToStore = trainTarget(classifierType,targetTrain, targetTrainLabel, X_test=targetTest, y_test=targetTestLabel, splitData= False, inepochs=num_epoch, batch_size=100) 
+	attackModelDataTarget, attackModelLabelsTarget, targetModelToStore = trainTarget(classifierType,targetTrain, targetTrainLabel, X_test=targetTest, y_test=targetTestLabel, splitData= False, inepochs=num_epoch, batch_size=100, maskConfidences=opt.maskConfidences) 
+	# the .npz files contain the posteriors (i.e. confidence scores) of the target model, along with the labels (1=member, 0=non-member)
 	np.savez(attackerModelDataPath + '/targetModelData.npz', attackModelDataTarget, attackModelLabelsTarget)
 	np.savez(modelPath + '/targetModel.npz', *lasagne.layers.get_all_param_values(targetModelToStore))
+	
+	## ADDITION: print confidence scores
+	probs, labels = np.load('./data/CIFAR10/attackerModelData/targetModelData.npz').values()
+	print("Sample confidence vector:", probs[0])
+	print("Predicted class confidence:", max(probs[0]))
+	print("Membership label:", labels[0])
 	return attackModelDataTarget, attackModelLabelsTarget
 
-def initializeShadowModel(dataset,num_epoch,dataFolderPath= './data/',modelFolderPath = './model/',classifierType = 'cnn'):
+def initializeShadowModel(dataset,num_epoch,dataFolderPath= './data/',modelFolderPath = './model/',classifierType = 'cnn', maskConfidences=False):
 	dataPath = dataFolderPath+dataset+'/Preprocessed'
 	attackerModelDataPath = dataFolderPath+dataset+'/attackerModelData'
 	modelPath = modelFolderPath + dataset
@@ -225,7 +238,7 @@ def initializeShadowModel(dataset,num_epoch,dataFolderPath= './data/',modelFolde
 	print("Training the Shadow model for {} epoch".format(num_epoch))
 	shadowTrainRaw, shadowTrainLabel  = load_data(dataPath + '/shadowTrain.npz')
 	targetTestRaw,  shadowTestLabel   = load_data(dataPath + '/shadowTest.npz')
-	attackModelDataShadow, attackModelLabelsShadow, shadowModelToStore = trainTarget(classifierType, shadowTrainRaw, shadowTrainLabel, X_test=targetTestRaw, y_test=shadowTestLabel, splitData= False, inepochs=num_epoch, batch_size=100) 
+	attackModelDataShadow, attackModelLabelsShadow, shadowModelToStore = trainTarget(classifierType, shadowTrainRaw, shadowTrainLabel, X_test=targetTestRaw, y_test=shadowTestLabel, splitData= False, inepochs=num_epoch, batch_size=100, maskConfidences=maskConfidences) 
 	np.savez(attackerModelDataPath + '/shadowModelData.npz', attackModelDataShadow, attackModelLabelsShadow)
 	np.savez(modelPath + '/shadowModel.npz', *lasagne.layers.get_all_param_values(shadowModelToStore))
 	return attackModelDataShadow, attackModelLabelsShadow
@@ -234,18 +247,18 @@ def initializeShadowModel(dataset,num_epoch,dataFolderPath= './data/',modelFolde
 
 	
 
-def generateAttackData(dataset, classifierType, dataFolderPath ,pathToLoadData ,num_epoch ,preprocessData ,trainTargetModel ,trainShadowModel,topX=3 ):
+def generateAttackData(dataset, classifierType, dataFolderPath ,pathToLoadData ,num_epoch ,preprocessData ,trainTargetModel ,trainShadowModel,topX=3):
 	attackerModelDataPath = dataFolderPath+dataset+'/attackerModelData'
 	if(preprocessData):
 		initializeData(dataset,pathToLoadData)
 	
 	if(trainTargetModel):	
-		targetX, targetY = initializeTargetModel(dataset,num_epoch,classifierType =classifierType )
+		targetX, targetY = initializeTargetModel(dataset,num_epoch,classifierType =classifierType, maskConfidences=opt.maskConfidences)
 	else:
 		targetX, targetY = load_data(attackerModelDataPath + '/targetModelData.npz')
 	
 	if(trainShadowModel):	
-		shadowX, shadowY = initializeShadowModel(dataset,num_epoch,classifierType =classifierType)	
+		shadowX, shadowY = initializeShadowModel(dataset,num_epoch,classifierType =classifierType, maskConfidences=opt.maskConfidences)	
 	else:
 		shadowX, shadowY = load_data(attackerModelDataPath + '/shadowModelData.npz')
 	

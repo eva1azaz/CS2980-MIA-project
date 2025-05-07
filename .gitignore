@@ -1,1 +1,13 @@
-data/data/cifar-10-batches-py/
+# Datasets
+data/cifar-10-batches-py-official/
+data/cifar-10-python.tar.gz
+data/CIFAR10/Preprocessed/
+
+# large files
+*.npz
+*.tar.gz
+*.zip
+*.npy
+*.pt
+*.pkl
+*.h5

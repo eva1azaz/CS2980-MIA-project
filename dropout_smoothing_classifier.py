@@ -164,9 +164,13 @@ def train_model(dataset, n_hidden=50, batch_size=100, epochs=100, learning_rate=
     counter = 1
     for epoch in range(epochs):
         loss = 0
-        for input_batch, target_batch in iterate_minibatches(train_x, train_y, batch_size):
-            smoothed_targets = smooth_labels(target_batch, num_classes=n_out)
-            loss += train_fn(input_batch, smoothed_targets)
+        train_y_smoothed = smooth_labels(train_y, num_classes=n_out) # precompute smoothed labels for runtime efficiency
+
+        # modify iterate_minibatches to use smoothed labels
+        for input_batch, idx_batch in iterate_minibatches(train_x, np.arange(len(train_y)), batch_size):
+            target_batch = train_y_smoothed[idx_batch]
+            loss += train_fn(input_batch, target_batch)
+
 
         loss = round(loss, 3)
         if(epoch % 10 ==0):

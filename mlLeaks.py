@@ -19,7 +19,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics import roc_auc_score
 import argparse
 import deeplearning as dp
-import dropout_classifier as classifier
+import smoothing_classifier as classifier
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--adv',  default='1', help='Which adversary 1, 2, or 3')

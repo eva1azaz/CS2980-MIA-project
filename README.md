@@ -19,20 +19,22 @@ The project focuses on the CIFAR-10 dataset and implements all defense methods b
 
 ## Project Structure
 
+```
 ├── data/
-│ ├── cifar-10-batches-py-official/ # CIFAR-10 dataset (downloaded)
-│ └── CIFAR10/
-│ ├── attackerModelData/ # Saved shadow/target outputs
-│ ├── Preprocessed/ # Processed model I/O
-│ └── model/CIFAR10/ # Saved trained models
-├── classifier.py # Base CNN classifier
-├── dropout_classifier.py # CNN with dropout
-├── smoothing_classifier.py # CNN with label smoothing
-├── dropout_smoothing_classifier.py # CNN with dropout + smoothing
-├── evaluate_dropout.py # Dropout effect analysis script
-├── deeplearning.py # Target model training + attack data
-├── mlLeaks.py # End-to-end experiment pipeline
+│   ├── cifar-10-batches-py-official/         # CIFAR-10 dataset (downloaded)
+│   └── CIFAR10/
+│       ├── attackerModelData/                # Saved shadow/target outputs
+│       ├── Preprocessed/                     # Processed model I/O
+│       └── model/CIFAR10/                    # Saved trained models
+├── classifier.py                             # Base CNN classifier
+├── dropout_classifier.py                     # CNN with dropout
+├── smoothing_classifier.py                   # CNN with label smoothing
+├── dropout_smoothing_classifier.py           # CNN with dropout + smoothing
+├── evaluate_dropout.py                       # Dropout effect analysis script
+├── deeplearning.py                           # Target model training + attack data
+├── mlLeaks.py                                # End-to-end experiment pipeline
 ├── README.md
+```
 
 ---
 

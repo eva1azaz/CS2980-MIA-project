@@ -113,7 +113,7 @@ This will accomplish the following:
 - Save metrics in `dropout_eval_metrics.npz`  
 - Plot results in `dropout_evaluation_results.png`  
 
-## Interpreting Output
+### Interpreting Output
 
 During training, you'll see model logs such as:
 

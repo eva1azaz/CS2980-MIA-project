@@ -10,16 +10,18 @@ This repository extends the [ML-Leaks framework](https://github.com/AhmedSalem2/
 
 The project focuses on the CIFAR-10 dataset and implements all defense methods both individually and in combination.
 
-## Key Resources
+## Key Resources and Project Structure
+
+### Resources
 - [ML-Leaks Paper (Salem et al., NDSS 2019)](https://www.ndss-symposium.org/wp-content/uploads/2019/02/ndss2019_05A-2_Salem_paper.pdf)
 - [Original GitHub Repo](https://github.com/AhmedSalem2/ML-Leaks)
 - [This Repo (Eva Azazoglu)](https://github.com/eva1azaz/CS2980-MIA-project)
 
----
 
-## Project Structure
+### Project Structure
 
 ```
+
 ├── data/
 │   ├── cifar-10-batches-py-official/         # CIFAR-10 dataset (downloaded)
 │   └── CIFAR10/
@@ -38,7 +40,7 @@ The project focuses on the CIFAR-10 dataset and implements all defense methods b
 
 ---
 
-## Setup
+## Environment Setup
 
 To reate and configure the environment:
 
@@ -103,7 +105,7 @@ Use `evaluate_dropout.py` to test the impact of different dropout rates:
 python evaluate_dropout.py
 ```
 
-This will:
+This will accomplish the following:
 
 - Train the model with dropout rates: 0.0, 0.25, 0.5, 0.75  
 - Save metrics in `dropout_eval_metrics.npz`  
@@ -132,13 +134,6 @@ Interpretation:
 - **Recall class 1 = members** (how well attacker detects members)  
 - **Recall class 0 = non-members**  
 - **Balanced Accuracy** = average of the two recall values  
-
-Example:
-
-> High recall for class 1 and low for class 0 means the attacker performs very well on members only, revealing a generalization gap.
-
-- Dropout may reduce this gap but can harm target accuracy.  
-- Smoothing often provides strong privacy with minimal utility loss.  
 
 ---
 

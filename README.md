@@ -13,10 +13,8 @@ The project focuses on the CIFAR-10 dataset and implements all defense methods b
 ## General Overview
 
 ### Resources
-- [ML-Leaks Paper (Salem et al., NDSS 2019)](https://www.ndss-symposium.org/wp-content/uploads/2019/02/ndss2019_05A-2_Salem_paper.pdf)
-- [Original GitHub Repo](https://github.com/AhmedSalem2/ML-Leaks)
-- [This Repo (Eva Azazoglu)](https://github.com/eva1azaz/CS2980-MIA-project)
-
+- [ML-Leaks Paper (Salem et al., 2019)](https://arxiv.org/abs/1806.012466)
+- [Original ML-Leaks GitHub Repo](https://github.com/AhmedSalem2/ML-Leaks)
 
 ### Project Structure
 

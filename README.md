@@ -10,7 +10,7 @@ This repository extends the [ML-Leaks framework](https://github.com/AhmedSalem2/
 
 The project focuses on the CIFAR-10 dataset and implements all defense methods both individually and in combination.
 
-## Key Resources and Project Structure
+## General Overview
 
 ### Resources
 - [ML-Leaks Paper (Salem et al., NDSS 2019)](https://www.ndss-symposium.org/wp-content/uploads/2019/02/ndss2019_05A-2_Salem_paper.pdf)
@@ -62,7 +62,7 @@ mv cifar-10-batches-py cifar-10-batches-py-official
 cd ..
 ```
 
-## How to Run Experiments
+## Running Experiments
 
 ### Step 1: Select Classifier Variant
 
@@ -97,7 +97,9 @@ from dropout_smoothing_classifier import get_cnn_model
 
 ---
 
-## Evaluating Dropout Effects
+## Evaluation 
+
+### Dropout Effects
 
 Use `evaluate_dropout.py` to test the impact of different dropout rates:
 
